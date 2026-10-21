@@ -1,0 +1,60 @@
+BONADENT - CRM DENTAL Y BOT DE RECORDATORIOS POR WHATSAPP
+==========================================================
+
+1. EL CRM
+---------
+Abre "Bonadent CRM.html" con doble clic (Chrome o Edge).
+Incluye: caja (ingresos y egresos), saldos por paciente, cotizaciones
+automáticas, agenda por odontólogo, recordatorios y la pestaña
+"Demostración WhatsApp bot" para presentar al cliente.
+
+En esta versión de escritorio los datos se guardan en el navegador de
+esta computadora. La versión en línea, compartida por todo el equipo,
+es la que está publicada en Claude.
+
+Para abrir directo la demo:  Bonadent CRM.html#demo
+
+
+2. EL BOT (n8n)
+---------------
+Flujo creado: "Clínica Dental · Bot de recordatorios WhatsApp"
+https://n8n-production-a74a.up.railway.app/workflow/tA98h2EQOxFvT49K
+
+Envía 2 avisos por cita: 3 días antes y el mismo día, con nombre,
+fecha, hora, odontólogo, clínica y dirección.
+
+
+3. LO QUE FALTA (lo hace la clínica en Meta)
+--------------------------------------------
+a) Crear la cuenta de WhatsApp Business API en business.facebook.com.
+   De ahí salen el TOKEN y el PHONE NUMBER ID.
+
+b) Enviar a aprobación estas 2 plantillas
+   (idioma: Español, categoría: Utilidad):
+
+   Nombre: recordatorio_cita_3dias
+   Texto:  Hola {{1}}, le recordamos su cita dental el {{2}} a las {{3}}
+           con {{4}} en {{5}}, ubicada en {{6}}. Si necesita aplazarla,
+           responda este mensaje.
+
+   Nombre: recordatorio_cita_hoy
+   Texto:  Hola {{1}}, hoy {{2}} a las {{3}} tiene su cita con {{4}}
+           en {{5}} ({{6}}). ¡Le esperamos! Si no puede asistir,
+           responda este mensaje.
+
+   Variables: {{1}} nombre, {{2}} fecha, {{3}} hora, {{4}} odontólogo,
+              {{5}} clínica, {{6}} dirección.
+
+c) En n8n, abrir el nodo "Enviar WhatsApp (plantilla)", crear la
+   credencial "WhatsApp Clínica" con el token y pegar el Phone Number ID.
+
+Luego: prueba con un número propio, publicar el flujo y activar el envío
+diario a las 7:45 a. m.
+
+
+4. MEJORA PROPUESTA (para cerrar la venta)
+------------------------------------------
+Botones de respuesta rápida "Confirmo" / "Aplazar" en las plantillas.
+El paciente confirma o elige un horario libre y la agenda se actualiza
+sola. Es lo que se ve en la pestaña de demostración; se construye
+después de cerrar la venta.
