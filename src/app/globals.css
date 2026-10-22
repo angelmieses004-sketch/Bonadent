@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@import "../design/tokens.css";
+
+@layer base {
+  html {
+    background: var(--color-canvas);
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+  button, [role="button"], a, summary, label[for] {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--color-lime);
+    color: var(--color-on-lime);
+  }
+}
+
+@layer components {
+  /* Tarjeta base: sin borde duro, radio grande, leve elevación al pasar */
+  .card {
+    background: var(--color-card);
+    border-radius: var(--radius-card);
+    padding: 1.25rem;
+    min-width: 0;
+  }
+  .lift {
+    transition: transform var(--duration-base) var(--ease-out-soft),
+      box-shadow var(--duration-base) var(--ease-out-soft);
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lift);
+    }
+  }
+  .eyebrow {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
