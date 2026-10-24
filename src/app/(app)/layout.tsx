@@ -18,7 +18,7 @@ export default async function LayoutApp({ children }: LayoutProps<"/">) {
               Vista previa · datos de ejemplo<span className="hidden sm:inline"> en memoria (se reinician al apagar el servidor)</span>
             </p>
           )}
-          <Encabezado usuario={usuario} tema={tema} />
+          <Encabezado tema={tema} />
           <main id="contenido" className="flex min-w-0 flex-col gap-4 md:gap-5">{children}</main>
         </div>
       </div>
