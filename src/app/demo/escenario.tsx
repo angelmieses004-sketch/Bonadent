@@ -5,7 +5,7 @@ import { BellRing, CalendarDays, Check, CheckCheck, Clock, MapPin, MessageCircle
 import { cn } from "@/lib/utils";
 import { fechaCorta, fechaLarga, hora12, sumarDias } from "@/lib/fechas";
 import { Chips } from "@/components/bona/chips";
-import { ESTADO_CITA } from "@/components/bona/tarjeta-cita";
+import { ESTADO_CITA } from "@/lib/estados";
 import type { EstadoCita } from "@/tipos";
 
 export interface DatosDemo {

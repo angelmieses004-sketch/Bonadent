@@ -34,7 +34,8 @@ export function Dialogo({ abierto, onCambio, titulo, descripcion, children, anch
                 exit={{ opacity: 0, y: 30, scale: 0.97, transition: { duration: 0.16 } }}
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               >
-                <div className="flex items-start justify-between gap-4 p-5 pb-3 sm:p-6 sm:pb-3">
+                <span aria-hidden className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-raised sm:hidden" />
+                <div className="flex items-start justify-between gap-4 p-5 pt-3 pb-3 sm:p-6 sm:pb-3">
                   <div>
                     <D.Title className="text-xl font-bold">{titulo}</D.Title>
                     {descripcion ? <D.Description className="text-sm text-muted">{descripcion}</D.Description> : <D.Description className="sr-only">{titulo}</D.Description>}

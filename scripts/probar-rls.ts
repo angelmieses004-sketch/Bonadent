@@ -79,6 +79,21 @@ try {
   esperar("recepción NO sube al bucket de panorámicas", Boolean(subirRec.error));
   const odoRec = await r.from("odontograma_piezas").insert({ paciente_id: pid, pieza_fdi: 11, estado: "caries" });
   esperar("recepción NO edita el odontograma", Boolean(odoRec.error));
+
+  // Inventario: todos mueven existencias; solo admin y recepción crean artículos
+  esperar("odontólogo ve el inventario", (await filas(o, "inventario_articulos")) > 0);
+  const artOdo = await o.from("inventario_articulos").insert({ nombre: "x", categoria: "Otros", unidad: "unidades" });
+  esperar("odontólogo NO crea artículos", Boolean(artOdo.error));
+  const art = (await admin.from("inventario_articulos").select("id").gt("cantidad", 0).limit(1).single()).data;
+  if (art) {
+    const mov = await o.rpc("mover_inventario", { p_articulo: art.id, p_delta: -1, p_motivo: "prueba RLS" });
+    esperar("odontólogo SÍ saca existencias", !mov.error);
+    if (!mov.error) await o.rpc("mover_inventario", { p_articulo: art.id, p_delta: 1, p_motivo: "deshacer prueba RLS" });
+    const neg = await o.rpc("mover_inventario", { p_articulo: art.id, p_delta: -999999 });
+    esperar("nadie deja existencias negativas", Boolean(neg.error));
+  }
+  const movDirecto = await r.from("inventario_movimientos").insert({ articulo_id: art?.id, tipo: "entrada", cantidad: 1, resultante: 1 });
+  esperar("nadie escribe movimientos sin mover_inventario()", Boolean(movDirecto.error));
 } catch (e) {
   console.error("Error inesperado:", e);
   fallos++;

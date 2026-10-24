@@ -9,10 +9,11 @@ import { randomUUID } from "node:crypto";
 import { supabaseConfigurado } from "@/lib/env";
 import { isoDia, sumarDias } from "@/lib/fechas";
 import { generarRecordatorios, esActiva } from "@/lib/reglas/recordatorios";
+import { aplicarMovimiento } from "@/lib/reglas/inventario";
 import { supabaseAdmin, supabaseServidor } from "@/lib/supabase/server";
 import type {
   Cita, Clinica, Cotizacion, EntradaAuditoria, EventoPieza, ItemCotizacion, Marcador, Panoramica, PiezaDental,
-  Recordatorio, SugerenciaIA, Usuario,
+  MovimientoInventario, Recordatorio, SugerenciaIA, Usuario,
 } from "@/tipos";
 import { datosDeEjemplo } from "./ejemplo";
 
@@ -26,6 +27,10 @@ interface Almacen extends Datos { auditoria: EntradaAuditoria[]; archivos: Map<s
 const g = globalThis as unknown as { __bonadent?: Almacen };
 function memoria(): Almacen {
   if (!g.__bonadent) g.__bonadent = { ...datosDeEjemplo(isoDia()), auditoria: [], archivos: new Map() };
+  // Si el servidor ya estaba encendido cuando se agregó un módulo nuevo, completa sus colecciones.
+  const m = g.__bonadent as unknown as Record<string, unknown>;
+  const faltan = Object.entries(datosDeEjemplo(isoDia())).filter(([k]) => m[k] === undefined);
+  for (const [k, v] of faltan) m[k] = v;
   return g.__bonadent;
 }
 /** Solo para la vista previa: vuelve a los datos de ejemplo. */
@@ -70,7 +75,7 @@ export async function leer(opciones: { desde?: string; hasta?: string } = {}): P
   const hastaCitas = opciones.hasta ?? sumarDias(hoy, 120);
   const desdeCaja = sumarDias(`${hoy.slice(0, 7)}-01`, -400);
 
-  const [clinica, doctores, servicios, pacientes, citas, movimientos, cotizaciones] = await Promise.all([
+  const [clinica, doctores, servicios, pacientes, citas, movimientos, cotizaciones, articulos] = await Promise.all([
     sb.from("clinica").select("*").maybeSingle(),
     sb.from("doctores").select("*").order("nombre"),
     sb.from("servicios").select("*").order("nombre"),
@@ -78,8 +83,9 @@ export async function leer(opciones: { desde?: string; hasta?: string } = {}): P
     sb.from("citas").select("*").gte("fecha", desdeCitas).lte("fecha", hastaCitas),
     sb.from("movimientos_caja").select("*").gte("fecha", desdeCaja).order("fecha", { ascending: false }),
     sb.from("cotizaciones").select("*, items:cotizacion_items(nombre, precio, cantidad, servicio_id, pieza_fdi, orden)").order("numero", { ascending: false }),
+    sb.from("inventario_articulos").select("*").eq("activo", true).order("nombre"),
   ]);
-  const error = [clinica, doctores, servicios, pacientes, citas, movimientos, cotizaciones].find((r) => r.error)?.error;
+  const error = [clinica, doctores, servicios, pacientes, citas, movimientos, cotizaciones, articulos].find((r) => r.error)?.error;
   if (error) throw new Error(`No se pudieron cargar los datos: ${error.message}`);
 
   const citasN = (citas.data ?? []).map(horaCorta) as Cita[];
@@ -99,6 +105,8 @@ export async function leer(opciones: { desde?: string; hasta?: string } = {}): P
       items: [...(q.items ?? [])].sort((a: { orden: number }, b: { orden: number }) => a.orden - b.orden).map((i: ItemCotizacion) => ({ ...i, precio: Number(i.precio) })),
     })),
     panoramicas: [], marcadores: [], piezas: [], eventos: [], sugerencias: [],
+    articulos: (articulos.data ?? []).map((a) => ({ ...a, cantidad: Number(a.cantidad), minimo: Number(a.minimo) })),
+    movInventario: [],
   };
 }
 
@@ -190,6 +198,7 @@ export async function leerAuditoria(limite = 40): Promise<EntradaAuditoria[]> {
 const TABLAS = {
   doctores: "doctores", servicios: "servicios", pacientes: "pacientes", citas: "citas",
   movimientos: "movimientos_caja", panoramicas: "panoramicas", marcadores: "marcadores", sugerencias: "sugerencias_ia",
+  articulos: "inventario_articulos",
 } as const;
 export type Coleccion = keyof typeof TABLAS;
 type Fila = Record<string, unknown>;
@@ -378,7 +387,7 @@ export async function leerComoSistema(): Promise<Datos> {
   };
 }
 function memoriaVacia(): Datos {
-  return { clinica: CLINICA_VACIA, doctores: [], servicios: [], pacientes: [], citas: [], recordatorios: [], movimientos: [], cotizaciones: [], panoramicas: [], marcadores: [], piezas: [], eventos: [], sugerencias: [] };
+  return { clinica: CLINICA_VACIA, doctores: [], servicios: [], pacientes: [], citas: [], recordatorios: [], movimientos: [], cotizaciones: [], panoramicas: [], marcadores: [], piezas: [], eventos: [], sugerencias: [], articulos: [], movInventario: [] };
 }
 
 /** Actualiza una cita sin sesión (respuestas del bot). */
@@ -386,6 +395,45 @@ export async function actualizarCitaComoSistema(id: string, cambios: Partial<Cit
   if (!supabaseConfigurado) return actualizar("citas", id, cambios, { nombre: "Bot de WhatsApp" } as Usuario);
   const { error } = await supabaseAdmin().from("citas").update(cambios).eq("id", id);
   if (error) throw new Error(mensajeError(error));
+}
+
+/* ======================================================================
+   Inventario
+   ====================================================================== */
+
+/** Suma o resta existencias (o fija un valor exacto) y deja el movimiento en el historial. */
+export async function moverInventario(id: string, delta: number, motivo: string | null, exacto: number | null, u: Usuario): Promise<number> {
+  if (!supabaseConfigurado) {
+    const m = memoria();
+    const a = m.articulos.find((x) => x.id === id && x.activo);
+    if (!a) throw new Error("No se encontró el artículo.");
+    const { nueva, tipo } = aplicarMovimiento(a.cantidad, delta, exacto);
+    const cambio = Math.round((nueva - a.cantidad) * 100) / 100;
+    a.cantidad = nueva;
+    m.movInventario.unshift({ id: randomUUID(), articulo_id: id, tipo, cantidad: cambio, resultante: nueva, motivo, quien: u.nombre, creado_en: new Date().toISOString() });
+    auditarMem(u, "inventario_articulos", id, "editar");
+    return nueva;
+  }
+  const sb = await supabaseServidor();
+  const { data, error } = await sb.rpc("mover_inventario", { p_articulo: id, p_delta: delta, p_motivo: motivo, p_exacto: exacto });
+  if (error) throw new Error(error.code === "23514" ? "No hay suficientes existencias" : mensajeError(error));
+  return Number(data);
+}
+
+/** Historial de movimientos (todos o de un artículo). */
+export async function leerMovimientosInventario(limite = 80, articuloId?: string): Promise<MovimientoInventario[]> {
+  if (!supabaseConfigurado) {
+    const lista = memoria().movInventario;
+    return (articuloId ? lista.filter((x) => x.articulo_id === articuloId) : lista).slice(0, limite);
+  }
+  const sb = await supabaseServidor();
+  let q = sb.from("inventario_movimientos").select("*").order("creado_en", { ascending: false }).limit(limite);
+  if (articuloId) q = q.eq("articulo_id", articuloId);
+  const { data } = await q;
+  const ids = [...new Set((data ?? []).map((x) => x.usuario_id).filter(Boolean))];
+  const perfiles = ids.length ? (await sb.from("perfiles").select("id, nombre").in("id", ids)).data ?? [] : [];
+  const nombre = new Map(perfiles.map((p) => [p.id, p.nombre]));
+  return (data ?? []).map((x) => ({ ...x, cantidad: Number(x.cantidad), resultante: Number(x.resultante), quien: nombre.get(x.usuario_id) ?? "Sistema" }));
 }
 
 /* ======================================================================
@@ -429,7 +477,7 @@ export async function borrarEjemplos(u: Usuario): Promise<number> {
   if (!supabaseConfigurado) {
     const m = memoria();
     let n = 0;
-    for (const col of ["pacientes", "citas", "movimientos", "cotizaciones", "servicios", "doctores", "panoramicas"] as const) {
+    for (const col of ["pacientes", "citas", "movimientos", "cotizaciones", "servicios", "doctores", "panoramicas", "articulos"] as const) {
       const lista = m[col] as unknown as Fila[];
       n += lista.filter((x) => x.es_ejemplo).length;
       (m[col] as unknown as Fila[]) = lista.filter((x) => !x.es_ejemplo);
@@ -444,7 +492,7 @@ export async function borrarEjemplos(u: Usuario): Promise<number> {
   }
   const sb = await supabaseServidor();
   let n = 0;
-  for (const t of ["movimientos_caja", "cotizaciones", "citas", "panoramicas", "pacientes", "servicios", "doctores"]) {
+  for (const t of ["movimientos_caja", "cotizaciones", "citas", "panoramicas", "pacientes", "servicios", "doctores", "inventario_articulos"]) {
     const { count } = await sb.from(t).delete({ count: "exact" }).eq("es_ejemplo", true);
     n += count ?? 0;
   }

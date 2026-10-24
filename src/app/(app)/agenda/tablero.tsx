@@ -53,13 +53,13 @@ export function TableroAgenda({ vista, fecha, hoy, citas, pacientes, doctores, s
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
           <Link href={url(vista, anterior)} aria-label="Anterior" className="grid size-11 place-items-center rounded-full bg-card transition hover:bg-raised active:scale-95"><ChevronLeft className="size-4" /></Link>
           <Link href={url(vista, siguiente)} aria-label="Siguiente" className="grid size-11 place-items-center rounded-full bg-card transition hover:bg-raised active:scale-95"><ChevronRight className="size-4" /></Link>
           <Link href={url(vista, hoy)} className={cn("flex h-11 items-center rounded-chip px-4 text-sm font-semibold transition", fecha === hoy ? "bg-lime text-on-lime" : "bg-card hover:bg-raised")}>Hoy</Link>
           <label className="sr-only" htmlFor="ir-fecha">Ir a fecha</label>
-          <input id="ir-fecha" type="date" value={fecha} onChange={(e) => e.target.value && router.push(url(vista, e.target.value))} className="h-11 rounded-chip bg-card px-4 text-sm" />
-          <h2 className="ml-1 text-xl font-bold tracking-tight">{titulo}</h2>
+          <input id="ir-fecha" type="date" value={fecha} onChange={(e) => e.target.value && router.push(url(vista, e.target.value))} className="h-11 min-w-0 flex-1 rounded-chip bg-card px-4 text-sm md:flex-none" />
+          <h2 className="w-full text-lg font-bold tracking-tight md:ml-1 md:w-auto md:text-xl">{titulo}</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {rol === "odontologo" && miDoctor && (
@@ -76,11 +76,11 @@ export function TableroAgenda({ vista, fecha, hoy, citas, pacientes, doctores, s
       <AnimatePresence mode="wait">
         <motion.div key={`${vista}-${fecha}-${soloMia}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
           {vista === "dia" && (
-            <div className="grid auto-cols-[minmax(270px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2">
+            <div className="grid gap-3 md:auto-cols-[minmax(270px,1fr)] md:grid-flow-col md:gap-4 md:overflow-x-auto md:pb-2">
               {columnas.map((d) => {
                 const lista = del(fecha).filter((c) => c.doctor_id === d.id);
                 return (
-                  <section key={d.id} className="card flex min-h-80 flex-col gap-3" aria-label={`Agenda de ${d.nombre}`}>
+                  <section key={d.id} className="card flex flex-col gap-3 md:min-h-80" aria-label={`Agenda de ${d.nombre}`}>
                     <header className="flex items-center gap-3">
                       <Avatar nombre={d.nombre} color={d.color} className="size-11" />
                       <div className="min-w-0 flex-1">
@@ -93,7 +93,7 @@ export function TableroAgenda({ vista, fecha, hoy, citas, pacientes, doctores, s
                         <TarjetaCita key={c.id} cita={c} paciente={pac.get(c.paciente_id)} doctor={d} rol={rol} onEditar={editar} onAplazar={setAplazando} />
                       ))}
                     </AnimatePresence>
-                    <button onClick={() => nuevaEn({ doctor_id: d.id })} className="group mt-auto grid min-h-20 place-items-center rounded-tile border-2 border-dashed border-lime/40 text-sm text-muted transition hover:border-lime hover:text-ink">
+                    <button onClick={() => nuevaEn({ doctor_id: d.id })} className="group mt-auto grid min-h-14 place-items-center md:min-h-20 rounded-tile border-2 border-dashed border-lime/40 text-sm text-muted transition hover:border-lime hover:text-ink">
                       <span className="flex items-center gap-2"><Plus className="size-4 transition-transform duration-300 group-hover:rotate-90" /> {lista.length ? "Agregar" : "Libre · agregar cita"}</span>
                     </button>
                   </section>
@@ -103,11 +103,11 @@ export function TableroAgenda({ vista, fecha, hoy, citas, pacientes, doctores, s
           )}
 
           {vista === "semana" && (
-            <div className="grid auto-cols-[minmax(200px,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2">
+            <div className="grid gap-2.5 md:auto-cols-[minmax(200px,1fr)] md:grid-flow-col md:gap-3 md:overflow-x-auto md:pb-2">
               {Array.from({ length: 7 }, (_, i) => sumarDias(lunes, i)).map((f, i) => {
                 const lista = del(f);
                 return (
-                  <section key={f} className={cn("flex min-h-72 flex-col gap-2 rounded-card p-3", f === hoy ? "bg-royal text-on-royal" : "bg-card")}>
+                  <section key={f} className={cn("flex flex-col gap-2 rounded-card p-3 md:min-h-72", f === hoy ? "bg-royal text-on-royal" : "bg-card")}>
                     <Link href={url("dia", f)} className="flex items-center justify-between rounded-tile px-1 py-1 hover:opacity-80">
                       <span className="text-sm font-semibold">{DIAS[i]}</span>
                       <span className={cn("grid size-9 place-items-center rounded-full text-sm font-bold", f === hoy ? "bg-lime text-on-lime" : "bg-raised")}>{Number(f.slice(8))}</span>
@@ -115,7 +115,7 @@ export function TableroAgenda({ vista, fecha, hoy, citas, pacientes, doctores, s
                     {lista.map((c) => (
                       <TarjetaCita key={c.id} cita={c} paciente={pac.get(c.paciente_id)} doctor={c.doctor_id ? doc.get(c.doctor_id) : undefined} rol={rol} onEditar={editar} onAplazar={setAplazando} compacta />
                     ))}
-                    {!lista.length && <p className={cn("mt-2 text-center text-xs", f === hoy ? "text-white/70" : "text-faint")}>Sin citas</p>}
+                    {!lista.length && <p className={cn("text-xs md:mt-2 md:text-center", f === hoy ? "text-white/70" : "text-faint")}>Sin citas</p>}
                     <button onClick={() => { setForm({ fecha: f, hora: "09:00", duracion_min: 30, cada_dias: 0 }); }} aria-label={`Agregar cita el ${f}`} className={cn("mt-auto grid h-10 place-items-center rounded-tile border-2 border-dashed transition", f === hoy ? "border-white/40 hover:border-white" : "border-lime/40 text-muted hover:border-lime")}>
                       <Plus className="size-4" />
                     </button>

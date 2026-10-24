@@ -90,3 +90,20 @@ export const esquemaClinica = z.object({
   direccion: opcional,
   meta_ingresos_mes: dinero.refine((n) => n >= 0, "La meta no puede ser negativa"),
 });
+
+export const esquemaArticulo = z.object({
+  id: idOpcional,
+  nombre: z.string().trim().min(2, "Escribe el nombre del artículo"),
+  categoria: z.string().trim().min(1, "Elige la categoría"),
+  unidad: z.string().trim().min(1, "Elige la unidad"),
+  cantidad: z.coerce.number({ message: "Escribe la cantidad" }).min(0, "La cantidad no puede ser negativa").optional(),
+  minimo: z.coerce.number({ message: "Escribe el mínimo" }).min(0, "El mínimo no puede ser negativo"),
+  nota: opcional,
+});
+
+export const esquemaAjuste = z.object({
+  id: z.string().min(1),
+  modo: z.enum(["entrada", "salida", "exacto"]),
+  cantidad: z.coerce.number({ message: "Escribe una cantidad" }).min(0, "La cantidad no puede ser negativa"),
+  motivo: opcional,
+});

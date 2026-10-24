@@ -84,8 +84,29 @@ export function Odontograma({ denticion, piezas, piezasConMarcador, activa, onEl
   const { superior, inferior } = piezasDe(denticion);
   const curva = (i: number, n: number) => Math.pow((i - (n - 1) / 2) / ((n - 1) / 2), 2) * 16;
 
+  const mitad = superior.length / 2;
+  const cuadrante = (titulo: string, lado: string, piezas: number[], abajo: boolean, base: number) => (
+    <div className="flex flex-col gap-1">
+      <span className="px-1 text-[0.65rem] font-semibold tracking-widest text-faint uppercase">{titulo} · {lado}</span>
+      <div className="flex justify-between gap-0.5 rounded-tile bg-sunken/60 px-1">
+        {piezas.map((n, i) => (
+          <Diente key={n} numero={n} pieza={mapa.get(n)} abajo={abajo} activa={activa === n} conMarcador={piezasConMarcador.has(n)} onClick={() => onElegir(n)} i={base + i} desplaz={0} />
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="overflow-x-auto pb-1">
+    <>
+    {/* Celular: cuadrantes de 8 (o 5) piezas, todo visible sin desplazar */}
+    <div className="flex flex-col gap-3 sm:hidden">
+      {cuadrante("Superior", "derecha", superior.slice(0, mitad), false, 0)}
+      {cuadrante("Superior", "izquierda", superior.slice(mitad), false, mitad)}
+      <div className="h-px bg-hairline" />
+      {cuadrante("Inferior", "izquierda", inferior.slice(mitad), true, mitad * 2)}
+      {cuadrante("Inferior", "derecha", inferior.slice(0, mitad), true, mitad * 3)}
+    </div>
+    <div className="hidden overflow-x-auto pb-1 sm:block">
       <div className="mx-auto flex min-w-[600px] max-w-4xl flex-col gap-2 px-1 py-5">
         <div className="flex items-end justify-between gap-0.5 sm:gap-1">
           {superior.map((n, i) => (
@@ -102,6 +123,7 @@ export function Odontograma({ denticion, piezas, piezasConMarcador, activa, onEl
         </div>
       </div>
     </div>
+    </>
   );
 }
 

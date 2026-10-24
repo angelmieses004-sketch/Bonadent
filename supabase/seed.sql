@@ -94,3 +94,47 @@ insert into public.cotizacion_items (cotizacion_id, nombre, precio, cantidad, or
   ('00000000-0000-4000-8000-d00000000004', 'Corona de porcelana', 18000, 1, 0);
 
 select setval('public.cotizacion_numero_seq', (select max(numero) from public.cotizaciones));
+
+insert into public.panoramicas (id, paciente_id, storage_path, tipo_mime, tomada_en, doctor_id, nota, es_ejemplo) values
+  ('00000000-0000-4000-8000-900000000001', '00000000-0000-4000-8000-b00000000003', 'ejemplo/p3-antes', 'image/svg+xml', current_date - 121, '00000000-0000-4000-8000-a00000000003', 'Evaluación inicial', true),
+  ('00000000-0000-4000-8000-900000000002', '00000000-0000-4000-8000-b00000000003', 'ejemplo/p3-despues', 'image/svg+xml', current_date - 3, '00000000-0000-4000-8000-a00000000003', 'Control tras 1ra sesión de endodoncia', true),
+  ('00000000-0000-4000-8000-900000000003', '00000000-0000-4000-8000-b00000000006', 'ejemplo/p6', 'image/svg+xml', current_date - 10, '00000000-0000-4000-8000-a00000000002', 'Planificación de implante', true);
+
+insert into public.marcadores (id, panoramica_id, x, y, pieza_fdi, nota) values
+  ('00000000-0000-4000-8000-800000000001', '00000000-0000-4000-8000-900000000002', 0.7567, 0.5527, 36, 'Conducto en tratamiento'),
+  ('00000000-0000-4000-8000-800000000002', '00000000-0000-4000-8000-900000000002', 0.2433, 0.5527, 46, 'Caries oclusal'),
+  ('00000000-0000-4000-8000-800000000003', '00000000-0000-4000-8000-900000000003', 0.3367, 0.4119, 14, 'Sitio del implante');
+
+insert into public.odontograma_piezas (paciente_id, pieza_fdi, estado, situacion, nota) values
+  ('00000000-0000-4000-8000-b00000000003', 16, 'resina', 'realizado', null),
+  ('00000000-0000-4000-8000-b00000000003', 18, 'ausente', null, null),
+  ('00000000-0000-4000-8000-b00000000003', 26, 'corona', 'indicado', 'Fractura de cúspide'),
+  ('00000000-0000-4000-8000-b00000000003', 36, 'endodoncia', 'indicado', '1ra sesión hecha'),
+  ('00000000-0000-4000-8000-b00000000003', 46, 'caries', null, 'Oclusal, profundidad media'),
+  ('00000000-0000-4000-8000-b00000000003', 48, 'extraccion', null, 'Cordal semi-incluida'),
+  ('00000000-0000-4000-8000-b00000000006', 14, 'implante', 'indicado', null),
+  ('00000000-0000-4000-8000-b00000000006', 11, 'corona', 'realizado', null),
+  ('00000000-0000-4000-8000-b00000000006', 21, 'corona', 'realizado', null),
+  ('00000000-0000-4000-8000-b00000000006', 37, 'resina', 'realizado', null);
+
+insert into public.inventario_articulos (id, nombre, categoria, unidad, cantidad, minimo, nota, es_ejemplo) values
+  ('00000000-0000-4000-8000-700000000001', 'Gomitas elásticas de ortodoncia', 'Ortodoncia', 'bolsas', 14, 10, 'Ligas de 1/4 y 3/16', true),
+  ('00000000-0000-4000-8000-700000000002', 'Ligaduras de colores', 'Ortodoncia', 'paquetes', 3, 5, null, true),
+  ('00000000-0000-4000-8000-700000000003', 'Brackets metálicos (kit)', 'Ortodoncia', 'cajas', 6, 2, null, true),
+  ('00000000-0000-4000-8000-700000000004', 'Arcos de níquel-titanio', 'Ortodoncia', 'paquetes', 9, 4, null, true),
+  ('00000000-0000-4000-8000-700000000005', 'Enjuague bucal', 'Higiene', 'botellas', 8, 6, 'Clorhexidina 0.12%', true),
+  ('00000000-0000-4000-8000-700000000006', 'Hilo dental', 'Higiene', 'unidades', 25, 15, null, true),
+  ('00000000-0000-4000-8000-700000000007', 'Cepillos dentales', 'Higiene', 'unidades', 0, 20, 'Para kits de pacientes nuevos', true),
+  ('00000000-0000-4000-8000-700000000008', 'Pasta profiláctica', 'Higiene', 'frascos', 4, 2, null, true),
+  ('00000000-0000-4000-8000-700000000009', 'Guantes de nitrilo (M)', 'Protección', 'cajas', 5, 4, null, true),
+  ('00000000-0000-4000-8000-700000000010', 'Mascarillas', 'Protección', 'cajas', 2, 3, null, true),
+  ('00000000-0000-4000-8000-700000000011', 'Baberos desechables', 'Desechables', 'paquetes', 7, 3, null, true),
+  ('00000000-0000-4000-8000-700000000012', 'Eyectores de saliva', 'Desechables', 'bolsas', 4, 2, null, true),
+  ('00000000-0000-4000-8000-700000000013', 'Rollos de algodón', 'Desechables', 'bolsas', 10, 4, null, true),
+  ('00000000-0000-4000-8000-700000000014', 'Anestesia lidocaína 2%', 'Anestesia', 'carpules', 46, 30, null, true),
+  ('00000000-0000-4000-8000-700000000015', 'Agujas cortas', 'Anestesia', 'cajas', 1, 2, null, true),
+  ('00000000-0000-4000-8000-700000000016', 'Resina compuesta A2', 'Materiales', 'jeringas', 5, 3, null, true),
+  ('00000000-0000-4000-8000-700000000017', 'Ácido grabador', 'Materiales', 'jeringas', 3, 2, null, true);
+
+insert into public.inventario_movimientos (articulo_id, tipo, cantidad, resultante, motivo)
+select id, 'entrada', cantidad, cantidad, 'Existencia inicial' from public.inventario_articulos where es_ejemplo;

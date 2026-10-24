@@ -10,14 +10,8 @@ import { Menu } from "@/components/ui/menu";
 import { ejecutar } from "@/components/ui/avisos";
 import { cambiarEstadoCita, completarCita, eliminarCita } from "@/app/(app)/agenda/acciones";
 import { Avatar } from "./avatar";
+import { ESTADO_CITA } from "@/lib/estados";
 
-export const ESTADO_CITA: Record<Cita["estado"], { texto: string; clase: string; barra: string }> = {
-  programada: { texto: "Por confirmar", clase: "bg-info/15 text-info", barra: "bg-info" },
-  confirmada: { texto: "Confirmada", clase: "bg-ok/15 text-ok", barra: "bg-ok" },
-  aplazada: { texto: "Aplazada", clase: "bg-warn/15 text-warn", barra: "bg-warn" },
-  completada: { texto: "Completada", clase: "bg-raised text-muted", barra: "bg-faint" },
-  cancelada: { texto: "Cancelada", clase: "bg-danger/12 text-danger", barra: "bg-danger" },
-};
 
 /** Tarjeta de cita para la agenda: hora grande, paciente, estado y acciones. */
 export function TarjetaCita({ cita, paciente, doctor, rol, onEditar, onAplazar, compacta }: {
@@ -52,8 +46,8 @@ export function TarjetaCita({ cita, paciente, doctor, rol, onEditar, onAplazar, 
       <span className={cn("absolute inset-y-3 left-2 w-1 rounded-full", est.barra)} aria-hidden />
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className={cn("font-bold tabular-nums", compacta ? "text-base" : "text-xl")}>{hora12(cita.hora)}</p>
-          <p className="flex items-center gap-1 text-xs text-muted">
+          <p className={cn("font-bold whitespace-nowrap tabular-nums", compacta ? "text-base" : "text-xl")}>{hora12(cita.hora)}</p>
+          <p className="flex flex-wrap items-center gap-1 text-xs whitespace-nowrap text-muted">
             <Clock className="size-3" aria-hidden /> {cita.duracion_min} min
             {cita.cada_dias > 0 && <><Repeat className="ml-1 size-3" aria-hidden /> cada {cita.cada_dias} d</>}
           </p>

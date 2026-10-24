@@ -184,3 +184,28 @@ export interface EntradaAuditoria {
   registro_id: string | null;
   accion: "crear" | "editar" | "borrar" | "ver";
 }
+
+/* ---------- Inventario ---------- */
+
+export interface ArticuloInventario {
+  id: string;
+  nombre: string;
+  categoria: string;
+  unidad: string;
+  cantidad: number;
+  minimo: number;
+  nota: string | null;
+  activo: boolean;
+  es_ejemplo: boolean;
+}
+
+export interface MovimientoInventario {
+  id: string;
+  articulo_id: string;
+  tipo: "entrada" | "salida" | "ajuste";
+  cantidad: number;
+  resultante: number;
+  motivo: string | null;
+  quien: string;
+  creado_en: string;
+}

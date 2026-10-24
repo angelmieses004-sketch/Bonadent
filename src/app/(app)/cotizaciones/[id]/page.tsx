@@ -46,7 +46,7 @@ export default async function DetalleCotizacion({ params, searchParams }: PagePr
     <>
       <Link href="/cotizaciones" className="flex items-center gap-2 self-start text-sm text-muted hover:text-ink"><ArrowLeft className="size-4" /> Cotizaciones</Link>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <Aparecer className="card flex flex-col gap-5 sm:p-7">
+        <Aparecer className="card flex min-w-0 flex-col gap-5 sm:p-7">
           <header className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm text-muted">{d.clinica.nombre}</p>
@@ -63,13 +63,13 @@ export default async function DetalleCotizacion({ params, searchParams }: PagePr
             <span><span className="block font-semibold">{p?.nombre}</span><span className="text-sm text-muted">{p?.telefono ?? "Sin WhatsApp"}</span></span>
           </Link>
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-muted"><th className="pb-2 font-medium">Servicio</th><th className="pb-2 text-right font-medium">Cant.</th><th className="pb-2 text-right font-medium">Precio</th><th className="pb-2 text-right font-medium">Importe</th></tr></thead>
+            <thead><tr className="text-left text-xs text-muted"><th className="pb-2 font-medium">Servicio</th><th className="pb-2 text-right font-medium">Cant.</th><th className="hidden pb-2 text-right font-medium sm:table-cell">Precio</th><th className="pb-2 text-right font-medium">Importe</th></tr></thead>
             <tbody>
               {q.items.map((i, k) => (
                 <tr key={k} className="border-t border-hairline">
                   <td className="py-3 pr-2">{i.nombre}</td>
                   <td className="py-3 text-right tabular-nums">{i.cantidad}</td>
-                  <td className="py-3 text-right tabular-nums text-muted">{RD(i.precio)}</td>
+                  <td className="hidden py-3 text-right tabular-nums text-muted sm:table-cell">{RD(i.precio)}</td>
                   <td className="py-3 text-right font-semibold tabular-nums">{RD(i.precio * i.cantidad)}</td>
                 </tr>
               ))}

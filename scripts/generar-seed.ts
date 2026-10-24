@@ -11,7 +11,7 @@ const hoy = isoDia();
 const d = datosDeEjemplo(hoy);
 
 // ids cortos del ejemplo → uuid fijo (para poder enlazar filas)
-const prefijo: Record<string, string> = { d: "a", s: "e", p: "b", c: "c", m: "f", q: "d", x: "9", k: "8" };
+const prefijo: Record<string, string> = { d: "a", s: "e", p: "b", c: "c", m: "f", q: "d", x: "9", k: "8", i: "7" };
 const uuid = (id: string) => `00000000-0000-4000-8000-${prefijo[id[0]]}${id.slice(1).padStart(11, "0")}`;
 const txt = (v: string | null | undefined) => (v == null ? "null" : `'${v.replace(/'/g, "''")}'`);
 const fecha = (iso: string) => {
@@ -47,6 +47,20 @@ insert("cotizaciones", ["id", "numero", "paciente_id", "fecha", "descuento_pct",
 insert("cotizacion_items", ["cotizacion_id", "nombre", "precio", "cantidad", "orden"],
   d.cotizaciones.flatMap((q) => q.items.map((i, k) => [txt(uuid(q.id)), txt(i.nombre), String(i.precio), String(i.cantidad), String(k)])));
 filas.push(`select setval('public.cotizacion_numero_seq', (select max(numero) from public.cotizaciones));\n`);
+
+// ---- Clínico (migración 0003). Las panorámicas "ejemplo/..." son SINTÉTICAS: las dibuja el servidor. ----
+insert("panoramicas", ["id", "paciente_id", "storage_path", "tipo_mime", "tomada_en", "doctor_id", "nota", "es_ejemplo"],
+  d.panoramicas.map((x) => [txt(uuid(x.id)), txt(uuid(x.paciente_id)), txt(x.storage_path), txt(x.tipo_mime), fecha(x.tomada_en), x.doctor_id ? txt(uuid(x.doctor_id)) : "null", txt(x.nota), "true"]));
+insert("marcadores", ["id", "panoramica_id", "x", "y", "pieza_fdi", "nota"],
+  d.marcadores.map((x) => [txt(uuid(x.id)), txt(uuid(x.panoramica_id)), String(x.x), String(x.y), String(x.pieza_fdi), txt(x.nota)]));
+insert("odontograma_piezas", ["paciente_id", "pieza_fdi", "estado", "situacion", "nota"],
+  d.piezas.map((x) => [txt(uuid(x.paciente_id)), String(x.pieza_fdi), txt(x.estado), txt(x.situacion), txt(x.nota)]));
+
+// ---- Inventario (migración 0004). La existencia inicial queda como movimiento. ----
+insert("inventario_articulos", ["id", "nombre", "categoria", "unidad", "cantidad", "minimo", "nota", "es_ejemplo"],
+  d.articulos.map((x) => [txt(uuid(x.id)), txt(x.nombre), txt(x.categoria), txt(x.unidad), String(x.cantidad), String(x.minimo), txt(x.nota), "true"]));
+filas.push(`insert into public.inventario_movimientos (articulo_id, tipo, cantidad, resultante, motivo)
+select id, 'entrada', cantidad, cantidad, 'Existencia inicial' from public.inventario_articulos where es_ejemplo;\n`);
 
 writeFileSync("supabase/seed.sql", filas.join("\n"));
 console.log("supabase/seed.sql generado");

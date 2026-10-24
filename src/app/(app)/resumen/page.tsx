@@ -4,6 +4,8 @@ import { ArrowUpRight, BellRing } from "lucide-react";
 import { requerirUsuario } from "@/lib/sesion";
 import { leer } from "@/datos/repo";
 import { calcularResumen } from "@/lib/reglas/resumen";
+import { estadoStock, porReponer } from "@/lib/reglas/inventario";
+import { Package } from "lucide-react";
 import { puede } from "@/lib/permisos";
 import { RD } from "@/lib/dinero";
 import { fechaCorta, hora12, isoDia, mayuscula, nombreMes, ZONA } from "@/lib/fechas";
@@ -35,7 +37,7 @@ export default async function PaginaResumen({ searchParams }: PageProps<"/resume
       )}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <Aparecer orden={0} className="h-full">
+        <Aparecer orden={0} className="h-full min-w-0">
           <TarjetaMetricas titulo={r.grupo} periodo={mayuscula(nombreMes(hoy))} metricas={r.metricas} />
         </Aparecer>
         <Aparecer orden={1}>
@@ -87,8 +89,28 @@ export default async function PaginaResumen({ searchParams }: PageProps<"/resume
               })()}
             </Aparecer>
           )}
-        </div>
 
+        {(() => {
+          const reponer = porReponer(datos.articulos);
+          if (!reponer.length) return null;
+          return (
+            <Aparecer orden={3} className="card lift flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-lg font-semibold"><Package className="size-5 text-warn" /> Por reponer</h2>
+                <Link href="/inventario" className="rounded-chip bg-raised px-3 py-1 text-xs font-semibold hover:bg-lime hover:text-on-lime">Inventario</Link>
+              </div>
+              <ul className="flex flex-wrap gap-1.5">
+                {reponer.slice(0, 5).map((a) => (
+                  <li key={a.id} className={estadoStock(a) === "agotado" ? "rounded-chip bg-danger/15 px-3 py-1 text-xs font-semibold text-danger" : "rounded-chip bg-warn/15 px-3 py-1 text-xs font-semibold text-warn"}>
+                    {a.nombre} · {a.cantidad}
+                  </li>
+                ))}
+                {reponer.length > 5 && <li className="px-1 py-1 text-xs text-muted">+{reponer.length - 5} más</li>}
+              </ul>
+            </Aparecer>
+          );
+        })()}
+        </div>
         <Aparecer orden={4}>
           <CitasHoy citas={r.citasHoy} ahora={ahora} />
         </Aparecer>

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Aparecer } from "@/components/bona/aparecer";
 import { Avatar } from "@/components/bona/avatar";
 import { Contador } from "@/components/bona/contador";
-import { ESTADO_CITA } from "@/components/bona/tarjeta-cita";
+import { ESTADO_CITA } from "@/lib/estados";
 import { Pestanas } from "@/components/ui/pestanas";
 import { FormularioPaciente } from "../formulario-paciente";
 import { PanelClinico } from "./clinico/panel-clinico";
@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: PageProps<"/pacientes/[id]">)
   return { title: p?.nombre ?? "Paciente" };
 }
 
+const ACCION = "flex h-16 flex-col items-center justify-center gap-1 rounded-tile bg-raised text-xs font-semibold transition active:scale-95 sm:h-11 sm:flex-row sm:gap-2 sm:rounded-chip sm:px-4 sm:text-sm sm:hover:-translate-y-0.5";
 const COT_ESTADO = { borrador: "bg-raised text-muted", enviada: "bg-info/15 text-info", aprobada: "bg-ok/15 text-ok", rechazada: "bg-danger/12 text-danger" };
 
 export default async function FichaPaciente({ params, searchParams }: PageProps<"/pacientes/[id]">) {
@@ -56,9 +57,9 @@ export default async function FichaPaciente({ params, searchParams }: PageProps<
     <>
       <Aparecer className="card flex flex-col gap-5 lg:flex-row lg:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-4">
-          <Avatar nombre={p.nombre} className="size-16 text-lg" />
+          <Avatar nombre={p.nombre} className="size-14 text-base sm:size-16 sm:text-lg" />
           <div className="min-w-0">
-            <h2 className="truncate text-2xl font-bold tracking-tight">{p.nombre}</h2>
+            <h2 className="truncate text-xl font-bold tracking-tight sm:text-2xl">{p.nombre}</h2>
             <p className="text-sm text-muted">
               {años !== null ? `${años} años · ` : ""}{p.telefono ?? "Sin WhatsApp"}
               {p.doctor_principal_id && doc.get(p.doctor_principal_id) ? ` · ${doc.get(p.doctor_principal_id)!.nombre}` : ""}
@@ -70,40 +71,40 @@ export default async function FichaPaciente({ params, searchParams }: PageProps<
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
           <FormularioPaciente paciente={p} doctores={d.doctores} disparador={
-            <button className="flex h-11 items-center gap-2 rounded-chip bg-raised px-4 text-sm font-semibold transition hover:-translate-y-0.5"><Pencil className="size-4" /> Editar</button>
+            <button className={ACCION}><Pencil className="size-4" /> Editar</button>
           } />
           {p.telefono && (
-            <a href={`https://wa.me/1${p.telefono.replace(/\D/g, "").slice(-10)}`} target="_blank" rel="noopener" className="flex h-11 items-center gap-2 rounded-chip bg-raised px-4 text-sm font-semibold transition hover:-translate-y-0.5 hover:text-ok">
+            <a href={`https://wa.me/1${p.telefono.replace(/\D/g, "").slice(-10)}`} target="_blank" rel="noopener" className={`${ACCION} hover:text-ok`}>
               <MessageCircle className="size-4" /> WhatsApp
             </a>
           )}
-          <Link href={`/cotizaciones/nueva?paciente=${id}`} className="flex h-11 items-center gap-2 rounded-chip bg-raised px-4 text-sm font-semibold transition hover:-translate-y-0.5"><FileText className="size-4" /> Cotizar</Link>
-          {verCaja && <Link href={`/caja?nuevo=ingreso&paciente=${id}`} className="flex h-11 items-center gap-2 rounded-chip bg-raised px-4 text-sm font-semibold transition hover:-translate-y-0.5"><Wallet className="size-4" /> Cobrar</Link>}
-          <Link href={`/agenda?nueva=1&paciente=${id}`} className="flex h-11 items-center gap-2 rounded-chip bg-royal px-4 text-sm font-semibold text-on-royal transition hover:-translate-y-0.5 hover:bg-royal-deep"><CalendarPlus className="size-4" /> Nueva cita</Link>
+          <Link href={`/cotizaciones/nueva?paciente=${id}`} className={ACCION}><FileText className="size-4" /> Cotizar</Link>
+          {verCaja && <Link href={`/caja?nuevo=ingreso&paciente=${id}`} className={ACCION}><Wallet className="size-4" /> Cobrar</Link>}
+          <Link href={`/agenda?nueva=1&paciente=${id}`} className="col-span-4 flex h-12 items-center justify-center gap-2 rounded-chip bg-royal px-4 text-sm font-semibold text-on-royal transition hover:-translate-y-0.5 hover:bg-royal-deep sm:h-11"><CalendarPlus className="size-4" /> Nueva cita</Link>
         </div>
       </Aparecer>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {verCaja && (
-          <Aparecer orden={1} className="card lift">
+          <Aparecer orden={1} className="card lift p-4 sm:p-5">
             <p className="text-sm text-muted">Saldo pendiente</p>
-            <Contador valor={saldo} formato="dinero" className={cn("mt-1 block text-2xl font-bold tabular-nums sm:text-3xl", saldo > 0 ? "text-coral" : "text-ok")} />
+            <Contador valor={saldo} formato="dinero" className={cn("mt-1 block text-xl font-bold tabular-nums sm:text-3xl", saldo > 0 ? "text-coral" : "text-ok")} />
           </Aparecer>
         )}
-        <Aparecer orden={2} className="card lift">
+        <Aparecer orden={2} className="card lift p-4 sm:p-5">
           <p className="text-sm text-muted">Próxima cita</p>
-          <p className="mt-1 text-xl font-bold">{proxima ? `${fechaCorta(proxima.fecha)} · ${hora12(proxima.hora)}` : "Sin agendar"}</p>
+          <p className="mt-1 text-base leading-tight font-bold sm:text-xl">{proxima ? `${fechaCorta(proxima.fecha)} · ${hora12(proxima.hora)}` : "Sin agendar"}</p>
           {proxima && <p className="truncate text-xs text-muted">{proxima.tratamiento}</p>}
         </Aparecer>
-        <Aparecer orden={3} className="card lift">
+        <Aparecer orden={3} className="card lift p-4 sm:p-5">
           <p className="text-sm text-muted">Visitas completadas</p>
-          <Contador valor={visitas.length} className="mt-1 block text-3xl font-bold tabular-nums" />
+          <Contador valor={visitas.length} className="mt-1 block text-2xl font-bold tabular-nums sm:text-3xl" />
         </Aparecer>
-        <Aparecer orden={4} className="card lift">
+        <Aparecer orden={4} className="card lift p-4 sm:p-5">
           <p className="text-sm text-muted">Piezas por tratar</p>
-          <Contador valor={odo.pendientes} className="mt-1 block text-3xl font-bold tabular-nums text-lime" />
+          <Contador valor={odo.pendientes} className="mt-1 block text-2xl font-bold tabular-nums text-lime sm:text-3xl" />
         </Aparecer>
       </div>
 

@@ -8,6 +8,7 @@ Sistema de gestión para **una clínica dental**. Incluye:
 - Pacientes, con panorámica y odontograma.
 - Caja.
 - Cotizaciones con PDF.
+- Inventario de la clínica (gomitas, enjuague, guantes…), con alertas de lo que hay que reponer.
 - Demostración pública del bot.
 
 **Stack:** Next.js 16 (App Router), TypeScript, Tailwind CSS 4, Supabase (Postgres, Auth, Storage y RLS), Motion, Recharts, Zod, @react-pdf/renderer y ExcelJS.
@@ -64,7 +65,8 @@ Mientras `.env.local` no tenga las claves de Supabase, la app arranca en **vista
    1. `supabase/migrations/20261021000001_base.sql` (clínica, equipo, roles, auditoría)
    2. `supabase/migrations/20261021000002_operacion.sql` (pacientes, citas, recordatorios, caja, cotizaciones)
    3. `supabase/migrations/20261021000003_clinico.sql` (panorámicas, odontograma, IA y buckets privados)
-   4. `supabase/seed.sql` (opcional: datos de ejemplo con `es_ejemplo = true`)
+   4. `supabase/migrations/20261022000004_inventario.sql` (inventario y sus movimientos)
+   5. `supabase/seed.sql` (opcional: datos de ejemplo con `es_ejemplo = true`)
 
    Con la CLI también se puede: `npx supabase login`, `npx supabase link --project-ref <ref>` y `npx supabase db push`.
 
@@ -99,7 +101,9 @@ Mientras `.env.local` no tenga las claves de Supabase, la app arranca en **vista
 |---|---|
 | Administrador | Todo, incluidos el equipo, el catálogo, los ajustes y la actividad (auditoría) |
 | Odontólogo | Agenda, todos los pacientes, cotizaciones, odontograma y panorámicas. **Sin caja** |
-| Recepción | Agenda, pacientes, recordatorios, caja y cotizaciones. **No ve radiografías**, solo sabe si el paciente tiene |
+| Recepción | Agenda, pacientes, recordatorios, caja, cotizaciones e inventario. **No ve radiografías**, solo sabe si el paciente tiene |
+
+En el **inventario**, todo el equipo puede poner y sacar existencias (queda en el historial quién lo hizo). Solo administración y recepción crean, editan o borran artículos.
 
 ### Seguridad de las radiografías
 
@@ -236,4 +240,6 @@ tests/                 Vitest
 - [x] **3. Caja y cotizaciones:** comprobantes, Excel, PDF, asistente de prueba, estados y saldo.
 - [x] **4. Panorámica y odontograma:** visor, escaneo, comparador, marcadores, FDI, historial, cotizar, agendar e IA opcional.
 - [x] **5. Demo del bot y endpoints de n8n.**
+- [x] **Inventario:** artículos con mínimo, botones − / +, ajuste con motivo, alertas y historial.
+- [x] **Versión para celular:** barra inferior de 5 botones, encabezado compacto, odontograma por cuadrantes.
 - [ ] Conectar Supabase y correr `npm run probar:rls` (al cerrar la venta).

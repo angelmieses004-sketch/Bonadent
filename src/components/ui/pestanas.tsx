@@ -11,7 +11,7 @@ export function Pestanas({ items, activo, grupo, className }: {
   className?: string;
 }) {
   return (
-    <nav aria-label="Secciones" className={cn("flex gap-1 overflow-x-auto rounded-chip bg-sunken p-1 [scrollbar-width:none]", className)}>
+    <nav aria-label="Secciones" className={cn("flex max-w-full gap-1 overflow-x-auto rounded-chip bg-sunken p-1 [scrollbar-width:none]", className)}>
       {items.map((i) => {
         const on = i.valor === activo;
         return (

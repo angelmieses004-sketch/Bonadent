@@ -61,9 +61,9 @@ export function MiniGrafica({ valores, tono, alto = 86, formato = "dinero" }: { 
   const d = ancho ? caminoMonotono(pts) : "";
 
   return (
-    <div ref={caja} className="w-full" style={{ height: alto }} aria-hidden>
+    <div ref={caja} className="relative w-full min-w-0" style={{ height: alto }} aria-hidden>
       {ancho > 0 && (
-        <svg width={ancho} height={alto} className="overflow-visible">
+        <svg width={ancho} height={alto} className="absolute inset-0 overflow-visible">
           <defs>
             <linearGradient id={`g${id}`} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor={color} stopOpacity="0.22" />

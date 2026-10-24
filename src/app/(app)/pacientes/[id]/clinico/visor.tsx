@@ -40,6 +40,7 @@ export function VisorPanoramica({ panoramica, marcadores, sugerencias, piezaActi
   const [proporcion, setProporcion] = useState(2);
   const [nuevo, setNuevo] = useState<{ x: number; y: number } | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
+  const [ajustes, setAjustes] = useState(false);
   const punteros = useRef(new Map<number, { x: number; y: number }>());
   const inicio = useRef<{ x: number; y: number; movido: boolean } | null>(null);
   const quieto = useReducedMotion();
@@ -137,7 +138,13 @@ export function VisorPanoramica({ panoramica, marcadores, sugerencias, piezaActi
     const el = caja.current?.parentElement;
     if (!el) return;
     if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
+    else {
+      el.requestFullscreen?.().then(() => {
+        // En celulares intenta girar a horizontal (no todos los navegadores lo permiten)
+        const o = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+        o.lock?.("landscape").catch(() => {});
+      }).catch(() => {});
+    }
   };
 
   const pendientes = sugerencias.filter((s) => s.decision === "pendiente");
@@ -239,9 +246,14 @@ export function VisorPanoramica({ panoramica, marcadores, sugerencias, piezaActi
           <BotonIcono etiqueta="Acercar" onClick={() => zoomEn(caja.current!.clientWidth / 2, caja.current!.clientHeight / 2, escala * 1.4)}><ZoomIn className="size-4" /></BotonIcono>
           <BotonIcono etiqueta="Restablecer" onClick={() => { reiniciar(); setBrillo(100); setContraste(100); }}><RotateCcw className="size-4" /></BotonIcono>
         </div>
-        <Deslizador icono={<Sun className="size-4" />} etiqueta="Brillo" valor={brillo} min={40} max={200} onCambio={setBrillo} />
-        <Deslizador icono={<Contrast className="size-4" />} etiqueta="Contraste" valor={contraste} min={50} max={250} onCambio={setContraste} />
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+        <div className="hidden flex-wrap gap-2 sm:flex">
+          <Deslizador icono={<Sun className="size-4" />} etiqueta="Brillo" valor={brillo} min={40} max={200} onCambio={setBrillo} />
+          <Deslizador icono={<Contrast className="size-4" />} etiqueta="Contraste" valor={contraste} min={50} max={250} onCambio={setContraste} />
+        </div>
+        <button onClick={() => setAjustes((v) => !v)} aria-expanded={ajustes} className={cn("flex h-12 items-center gap-2 rounded-chip px-4 text-sm font-semibold sm:hidden", ajustes ? "bg-lime text-on-lime" : "bg-raised")}>
+          <Sun className="size-4" /> Imagen
+        </button>
+        <div className="ml-auto flex items-center gap-2">
           {puedeEditar && (
             <button onClick={() => setModo((m) => (m === "marcar" ? "ver" : "marcar"))} aria-pressed={modo === "marcar"}
               className={cn("flex h-10 items-center gap-2 rounded-chip px-4 text-sm font-semibold transition", modo === "marcar" ? "bg-lime text-on-lime" : "bg-raised hover:bg-card")}>
@@ -258,6 +270,13 @@ export function VisorPanoramica({ panoramica, marcadores, sugerencias, piezaActi
           </BotonIcono>
         </div>
       </div>
+      {ajustes && (
+        <div className="grid gap-2 sm:hidden">
+          <Deslizador icono={<Sun className="size-4" />} etiqueta="Brillo" valor={brillo} min={40} max={200} onCambio={setBrillo} ancho />
+          <Deslizador icono={<Contrast className="size-4" />} etiqueta="Contraste" valor={contraste} min={50} max={250} onCambio={setContraste} ancho />
+        </div>
+      )}
+      <p className="text-xs text-faint sm:hidden">Pellizca para acercar · toca <Maximize className="inline size-3" /> y gira el teléfono para verla en grande.</p>
       {pendientes.length > 0 && <p className="text-xs font-semibold text-warn">{AVISO_SUGERENCIA}</p>}
 
       <NuevoMarcador punto={nuevo} onCerrar={() => { setNuevo(null); setModo("ver"); }} panoramicaId={panoramica.id} pacienteId={pacienteId} piezaSugerida={piezaActiva} />
@@ -273,12 +292,12 @@ function BotonIcono({ etiqueta, onClick, children, className }: { etiqueta: stri
   );
 }
 
-function Deslizador({ icono, etiqueta, valor, min, max, onCambio }: { icono: React.ReactNode; etiqueta: string; valor: number; min: number; max: number; onCambio: (v: number) => void }) {
+function Deslizador({ icono, etiqueta, valor, min, max, onCambio, ancho }: { icono: React.ReactNode; etiqueta: string; valor: number; min: number; max: number; onCambio: (v: number) => void; ancho?: boolean }) {
   return (
     <label className="flex h-12 items-center gap-2 rounded-chip bg-raised px-3 text-muted" title={etiqueta}>
       {icono}
-      <span className="sr-only">{etiqueta}</span>
-      <input type="range" min={min} max={max} value={valor} onChange={(e) => onCambio(Number(e.target.value))} className="w-24 accent-[var(--color-lime)] sm:w-28" />
+      <span className={ancho ? "w-20 text-sm" : "sr-only"}>{etiqueta}</span>
+      <input type="range" min={min} max={max} value={valor} onChange={(e) => onCambio(Number(e.target.value))} className={cn("accent-[var(--color-lime)]", ancho ? "min-w-0 flex-1" : "w-24 sm:w-28")} />
       <span className="w-9 text-right text-xs tabular-nums">{valor}%</span>
     </label>
   );

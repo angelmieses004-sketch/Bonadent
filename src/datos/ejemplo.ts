@@ -4,7 +4,7 @@
  * El mismo contenido está en supabase/seed.sql con es_ejemplo = true.
  */
 import { sumarDias } from "@/lib/fechas";
-import type { Cita, Clinica, Cotizacion, Doctor, EventoPieza, Marcador, Movimiento, Paciente, Panoramica, PiezaDental, Recordatorio, Servicio, SugerenciaIA } from "@/tipos";
+import type { ArticuloInventario, Cita, Clinica, Cotizacion, Doctor, EventoPieza, MovimientoInventario, Marcador, Movimiento, Paciente, Panoramica, PiezaDental, Recordatorio, Servicio, SugerenciaIA } from "@/tipos";
 import { generarRecordatorios } from "@/lib/reglas/recordatorios";
 import { posicionPieza } from "@/lib/panoramica-sintetica";
 
@@ -180,7 +180,39 @@ export function datosDeEjemplo(hoy: string) {
   ];
   const sugerencias: SugerenciaIA[] = [];
 
-  return { clinica, doctores, servicios, pacientes, citas, recordatorios, movimientos, cotizaciones, panoramicas, marcadores, piezas, eventos, sugerencias };
+  // ---- Inventario ----
+  const ar = (id: string, nombre: string, categoria: string, unidad: string, cantidad: number, minimo: number, nota: string | null = null): ArticuloInventario =>
+    ({ id, nombre, categoria, unidad, cantidad, minimo, nota, activo: true, ...ex });
+  const articulos: ArticuloInventario[] = [
+    ar("i01", "Gomitas elásticas de ortodoncia", "Ortodoncia", "bolsas", 14, 10, "Ligas de 1/4 y 3/16"),
+    ar("i02", "Ligaduras de colores", "Ortodoncia", "paquetes", 3, 5),
+    ar("i03", "Brackets metálicos (kit)", "Ortodoncia", "cajas", 6, 2),
+    ar("i04", "Arcos de níquel-titanio", "Ortodoncia", "paquetes", 9, 4),
+    ar("i05", "Enjuague bucal", "Higiene", "botellas", 8, 6, "Clorhexidina 0.12%"),
+    ar("i06", "Hilo dental", "Higiene", "unidades", 25, 15),
+    ar("i07", "Cepillos dentales", "Higiene", "unidades", 0, 20, "Para kits de pacientes nuevos"),
+    ar("i08", "Pasta profiláctica", "Higiene", "frascos", 4, 2),
+    ar("i09", "Guantes de nitrilo (M)", "Protección", "cajas", 5, 4),
+    ar("i10", "Mascarillas", "Protección", "cajas", 2, 3),
+    ar("i11", "Baberos desechables", "Desechables", "paquetes", 7, 3),
+    ar("i12", "Eyectores de saliva", "Desechables", "bolsas", 4, 2),
+    ar("i13", "Rollos de algodón", "Desechables", "bolsas", 10, 4),
+    ar("i14", "Anestesia lidocaína 2%", "Anestesia", "carpules", 46, 30),
+    ar("i15", "Agujas cortas", "Anestesia", "cajas", 1, 2),
+    ar("i16", "Resina compuesta A2", "Materiales", "jeringas", 5, 3),
+    ar("i17", "Ácido grabador", "Materiales", "jeringas", 3, 2),
+  ];
+  const mi = (id: string, articulo_id: string, tipo: MovimientoInventario["tipo"], cantidad: number, resultante: number, motivo: string | null, quien: string, dia: number, hora = "10:00"): MovimientoInventario =>
+    ({ id, articulo_id, tipo, cantidad, resultante, motivo, quien, creado_en: `${d(dia)}T${hora}:00-04:00` });
+  const movInventario: MovimientoInventario[] = [
+    mi("v1", "i01", "salida", -2, 14, "Control de brackets", "Dra. Laura Peña", 0, "09:20"),
+    mi("v2", "i14", "salida", -2, 46, "Endodoncia", "Dra. Carla Núñez", -2, "14:10"),
+    mi("v3", "i07", "salida", -5, 0, "Kits de bienvenida", "Carmen Reyes", -3),
+    mi("v4", "i09", "entrada", 4, 5, "Compra a proveedor", "Carmen Reyes", -6, "11:30"),
+    mi("v5", "i05", "entrada", 6, 8, "Compra a proveedor", "Carmen Reyes", -6, "11:35"),
+  ];
+
+  return { clinica, doctores, servicios, pacientes, citas, recordatorios, movimientos, cotizaciones, panoramicas, marcadores, piezas, eventos, sugerencias, articulos, movInventario };
 }
 
 export type DatosOperacion = ReturnType<typeof datosDeEjemplo>;

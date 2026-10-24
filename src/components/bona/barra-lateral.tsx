@@ -3,10 +3,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { BellRing, CalendarDays, FileText, House, LogOut, MessageCircle, Settings, Users, Wallet, type LucideIcon } from "lucide-react";
+import { BellRing, CalendarDays, FileText, House, LogOut, MessageCircle, Package, Settings, Users, Wallet, type LucideIcon } from "lucide-react";
 import type { Rol } from "@/tipos";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./avatar";
+import { NavMovil } from "./nav-movil";
 
 interface Item { href: string; texto: string; icono: LucideIcon; roles?: Rol[] }
 
@@ -17,6 +18,7 @@ export const NAVEGACION: Item[] = [
   { href: "/recordatorios", texto: "Recordatorios", icono: BellRing },
   { href: "/caja", texto: "Caja", icono: Wallet, roles: ["admin", "recepcion"] },
   { href: "/cotizaciones", texto: "Cotizaciones", icono: FileText },
+  { href: "/inventario", texto: "Inventario", icono: Package },
   { href: "/demo", texto: "Demostración del bot", icono: MessageCircle },
   { href: "/ajustes", texto: "Ajustes", icono: Settings },
 ];
@@ -81,17 +83,8 @@ export function BarraLateral({ rol, nombre, cerrarSesion }: { rol: Rol; nombre: 
         </div>
       </nav>
 
-      {/* Celular: barra inferior flotante */}
-      <nav aria-label="Principal" className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 md:hidden">
-        <div className="flex items-center gap-1 overflow-x-auto rounded-chip bg-card/95 p-1.5 shadow-lift backdrop-blur [scrollbar-width:none]">
-          {items.map((i) => <BotonNav key={i.href} item={i} activo={activo(i.href)} movil />)}
-          <form action={cerrarSesion} className="ml-auto">
-            <button aria-label="Cerrar sesión" className="grid size-11 place-items-center rounded-full text-muted">
-              <LogOut className="size-[1.1rem]" />
-            </button>
-          </form>
-        </div>
-      </nav>
+      {/* Celular: barra inferior de 5 botones + "Más" */}
+      <NavMovil items={items} rol={rol} cerrarSesion={cerrarSesion} />
     </>
   );
 }

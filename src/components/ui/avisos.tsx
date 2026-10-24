@@ -24,7 +24,7 @@ export function Avisos() {
     return () => void oyentes.delete(f);
   }, []);
   return (
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 md:bottom-6">
+    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-28 z-[60] flex flex-col items-center gap-2 px-4 md:bottom-6">
       <AnimatePresence>
         {lista.map((a) => (
           <motion.div

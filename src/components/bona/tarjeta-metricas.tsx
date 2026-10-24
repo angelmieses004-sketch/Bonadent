@@ -10,16 +10,16 @@ const fmt = (m: Metrica, n: number) => (m.formato === "dinero" ? RD(n) : new Int
 /** Tarjeta grande con 3 métricas: mini gráfica, número grande y filas "Meta / Promedio". */
 export function TarjetaMetricas({ titulo, periodo, metricas }: { titulo: string; periodo: string; metricas: Metrica[] }) {
   return (
-    <section className="card lift flex h-full flex-col gap-4" aria-labelledby="tm-titulo">
-      <header className="flex items-center justify-between">
+    <section className="card lift flex h-full min-w-0 flex-col gap-4" aria-labelledby="tm-titulo">
+      <header className="flex items-center justify-between gap-2">
         <h2 id="tm-titulo" className="text-lg font-semibold">{titulo}</h2>
-        <span className="rounded-chip bg-raised px-3 py-1 text-xs text-muted">{periodo}</span>
+        <span className="rounded-chip bg-raised px-3 py-1 text-xs text-muted"><span className="sm:hidden">Desliza · </span>{periodo}</span>
       </header>
-      <div className="grid flex-1 grid-cols-1 gap-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-hairline">
+      <div className="-mx-5 flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-hairline sm:overflow-visible sm:px-0 sm:pb-0">
         {metricas.map((m, i) => (
           <motion.article
             key={m.titulo}
-            className="flex min-w-0 flex-col gap-2 sm:px-4 first:sm:pl-0 last:sm:pr-0"
+            className="flex w-[82%] shrink-0 snap-center flex-col gap-2 rounded-tile bg-raised p-4 sm:w-auto sm:min-w-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:px-4 first:sm:pl-0 last:sm:pr-0"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 * i }}
